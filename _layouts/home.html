@@ -9,42 +9,61 @@ layout: default
 
   {{ content }}
 
-  <h2>Lo Studio</h2>
+  <section class="home-hero">
+    <img class="landing-image" src="{{ "/assets/images/landing.jpg" | relative_url }}" alt="">
+    <div class="home-hero__label">
+      <span class="home-hero__kicker">Ingegneria civile</span>
+      <h2>Lo Studio</h2>
+    </div>
+  </section>
 
-  <img class="landing-image" src="../assets/images/landing.jpg">
+  <section class="home-intro">
+    <div class="home-intro__year">1981<span>fondazione</span></div>
 
+    <div class="contenitore-text">
+      <p>Lo studio di progettazione nasce nel <b>1981</b>.</p>
+      <p>Da allora si occupa di progettazione e realizzazione di opere di edilizia
+      civile ed industriale, con committenti privati e pubblici.</p>
+      <p>Lo studio segue, con competenza, ogni fase di realizzazione di un'opera:
+      progettazione architettonica, strutturale, impiantistica, direzione dei
+      lavori e coordinamento della sicurezza.</p>
+      <p>Nella sua attività, si è occupato della progettazione e realizzazione di
+      complessi residenziali, ville, edifici industriali, uffici, complessi
+      polifunzionali, edilizia scolastica, strade ed opere di urbanizzazione. Un
+      importante settore dell'attività è dato dal <b>restauro</b> e consolidamento di
+      edifici storici e monumentali, tra i quali chiese e campanili.</p>
+      <p>In campo strutturale, ha maturato una particolare esperienza
+      nella <b>progettazione antisismica</b> di opere in cemento armato e muratura,
+      nella verifica del livello di sicurezza e nel <b>consolidamento</b> di edifici ed
+      infrastrutture di importanza rilevante e strategica, ivi compresi musei,
+      edifici di culto e sbarramenti fluviali.</p>
+      <p>Nell'<b>industria</b>, ha realizzato fondazioni di macchine utensili di grandi
+      dimensioni, garantendo piccolissime deformazioni sotto carico per
+      consentire lavorazioni di precisione (centri di lavoro, alesatrici, fresatrici,
+      torni), fosse per cabine di verniciatura e pavimentazioni industriali in
+      calcestruzzo soggette a carichi straordinari.</p>
+      <p>Lo studio ha approfondito alcuni campi della tradizionale attività
+      sviluppatisi in tempi recenti, occupandosi di progettazione e realizzazione
+      di "<b>edifici ad energia quasi zero(NZEB)</b>".</p>
+    </div>
+  </section>
 
-  <div class="contenitore-text">
-    Lo studio di progettazione nasce nel <b>1981</b>.
-    <br><br>
-    Da allora si occupa di progettazione e realizzazione di opere di edilizia
-    civile ed industriale, con committenti privati e pubblici.
-    <br><br>
-    Lo studio segue, con competenza, ogni fase di realizzazione di un'opera:
-    progettazione architettonica, strutturale, impiantistica, direzione dei
-    lavori e coordinamento della sicurezza.
-    <br><br>
-    Nella sua attività, si è occupato della progettazione e realizzazione di
-    complessi residenziali, ville, edifici industriali, uffici, complessi
-    polifunzionali, edilizia scolastica, strade ed opere di urbanizzazione. Un
-    importante settore dell'attività è dato dal <b>restauro</b> e consolidamento di
-    edifici storici e monumentali, tra i quali chiese e campanili.
-    <br><br>
-    In campo strutturale, ha maturato una particolare esperienza
-    nella <b>progettazione antisismica</b> di opere in cemento armato e muratura,
-    nella verifica del livello di sicurezza e nel <b>consolidamento</b> di edifici ed
-    infrastrutture di importanza rilevante e strategica, ivi compresi musei,
-    edifici di culto e sbarramenti fluviali.
-    <br><br>
-    Nell'<b>industria</b>, ha realizzato fondazioni di macchine utensili di grandi
-    dimensioni, garantendo piccolissime deformazioni sotto carico per
-    consentire lavorazioni di precisione (centri di lavoro, alesatrici, fresatrici,
-    torni), fosse per cabine di verniciatura e pavimentazioni industriali in
-    calcestruzzo soggette a carichi straordinari.
-    <br><br>
-    Lo studio ha approfondito alcuni campi della tradizionale attività
-    sviluppatisi in tempi recenti, occupandosi di progettazione e realizzazione
-    di "<b>edifici ad energia quasi zero(NZEB)</b>".
-</div>
+  <section class="home-works">
+    <div class="section-head">
+      <h2>Realizzazioni</h2>
+      <a class="section-head__link" href="{{ "/areas/" | relative_url }}">Vedi tutte &rarr;</a>
+    </div>
+    <ul class="home-works__grid">
+      {%- for area in site.areas -%}
+      {%- assign area_link = area.content-url | default: area.url -%}
+      <li class="home-works__item">
+        <a href="{{ area_link | relative_url }}">
+          <span class="home-works__img"><img src="{{ "/foto/" | relative_url }}{{ area.preview }}" alt="" loading="lazy"></span>
+          <span class="home-works__title">{{ area.title | escape }}</span>
+        </a>
+      </li>
+      {%- endfor -%}
+    </ul>
+  </section>
 
 </div>

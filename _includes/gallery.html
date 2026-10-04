@@ -1,0 +1,212 @@
+<script>
+/* Galleria per le pagine dei lavori.
+   Non modifica i testi: sposta gli stessi titoli, commenti e foto
+   in sezioni con griglia di foto e aggiunge la visione a tutto schermo.
+   Rende ingrandibili anche le foto singole nelle pagine elenco (es. Campanile BM). */
+(function () {
+  var all = [];
+  var headingEl = document.querySelector('.post-header h2') || document.querySelector('.page-content h2');
+  var pageTitle = headingEl ? headingEl.textContent.replace(/\s+/g, ' ').trim() : '';
+
+  var LONG = 60;
+
+  function register(im, a, title, note) {
+    // se il "titolo" e' una frase lunga, in galleria diventa didascalia sotto il nome del lavoro
+    if (title && title.length > LONG) {
+      note = note ? title + ' ' + note : title;
+      title = pageTitle;
+    }
+    var idx = all.length;
+    all.push({ src: im.src, title: title || pageTitle, note: note || '', el: a, missing: false });
+    a.addEventListener('click', function (e) { e.preventDefault(); openAt(idx); });
+    function markMissing() {
+      all[idx].missing = true;
+      if (a.parentNode) { a.parentNode.removeChild(a); }
+    }
+    im.addEventListener('error', markMissing);
+    if (im.complete && im.naturalWidth === 0 && im.getAttribute('src')) { markMissing(); }
+  }
+
+  // 1) Pagine dei lavori: sezioni nell'ordine originale (titolo + commenti + foto)
+  var content = document.querySelector('.post-content');
+  if (content) {
+    var kids = Array.prototype.slice.call(content.children);
+    var sections = [];
+    var cur = null;
+    var newSection = function (head) { cur = { head: head, notes: [], imgs: [] }; sections.push(cur); };
+
+    kids.forEach(function (el) {
+      var tag = el.tagName;
+      if (/^H[1-6]$/.test(tag)) { newSection(el); return; }
+      var imgs = tag === 'IMG' ? [el] : el.querySelectorAll('img');
+      var text = (el.textContent || '').replace(/\s+/g, '');
+      if (imgs.length && !text) {
+        if (!cur) { newSection(null); }
+        Array.prototype.forEach.call(imgs, function (im) { cur.imgs.push(im); });
+      } else {
+        if (!cur || cur.imgs.length) { newSection(null); }
+        cur.notes.push(el);
+      }
+    });
+
+    var hasImages = sections.some(function (s) { return s.imgs.length > 0; });
+    if (hasImages) {
+      var frag = document.createDocumentFragment();
+      var cards = null;
+      var isSmall = function (i) {
+        var t = sections[i];
+        return !!(t && t.head && t.imgs.length > 0 && t.imgs.length <= 2);
+      };
+
+      sections.forEach(function (s, i) {
+        var sec = document.createElement('section');
+        sec.className = 'gal-section';
+
+        if (s.head || s.notes.length) {
+          var hd = document.createElement('div');
+          hd.className = 'gal-head';
+          if (s.head) {
+            // Intestazioni che sono frasi descrittive lunghe: presentate come descrizione
+            if (s.head.textContent.replace(/\s+/g, ' ').trim().length > LONG) {
+              s.head.classList.add('gal-lead');
+              hd.classList.add('gal-head--lead');
+            }
+            hd.appendChild(s.head);
+          }
+          s.notes.forEach(function (n) { n.classList.add('gal-note'); hd.appendChild(n); });
+          sec.appendChild(hd);
+        }
+
+        if (s.imgs.length) {
+          var title = s.head ? s.head.textContent.replace(/\s+/g, ' ').trim() : '';
+          var note = s.notes.map(function (n) { return n.textContent.replace(/\s+/g, ' ').trim(); }).join(' ');
+          var grid = document.createElement('div');
+          grid.className = 'gal-grid gal-grid--' + Math.min(s.imgs.length, 3);
+          s.imgs.forEach(function (im) {
+            var a = document.createElement('a');
+            a.className = 'gal-item';
+            a.href = im.getAttribute('src');
+            im.removeAttribute('class');
+            im.alt = title || pageTitle;
+            a.appendChild(im);
+            grid.appendChild(a);
+            register(im, a, title, note);
+          });
+          sec.appendChild(grid);
+        }
+
+        // Due o piu' sezioni brevi di seguito (titolo + 1-2 foto): affiancate come schede
+        var inCards = isSmall(i) && (isSmall(i - 1) || isSmall(i + 1));
+        if (inCards) {
+          if (s.imgs.length === 2) { sec.classList.add('gal-section--wide'); }
+          if (!cards) {
+            cards = document.createElement('div');
+            cards.className = 'gal-cards';
+            frag.appendChild(cards);
+          }
+          cards.appendChild(sec);
+        } else {
+          cards = null;
+          frag.appendChild(sec);
+        }
+      });
+
+      content.innerHTML = '';
+      content.appendChild(frag);
+      content.classList.add('gallery');
+    }
+  }
+
+  // 2) Foto singole (non collegate ad altre pagine) nelle pagine elenco
+  var loose = document.querySelectorAll('.page-content .post-list > div > img');
+  Array.prototype.forEach.call(loose, function (im) {
+    var a = document.createElement('a');
+    a.className = 'gal-item';
+    a.href = im.getAttribute('src');
+    im.parentNode.insertBefore(a, im);
+    a.appendChild(im);
+    register(im, a, pageTitle, '');
+  });
+
+  if (!all.length) { return; }
+
+  // 3) Visione a tutto schermo
+  var lb = document.createElement('div');
+  lb.className = 'lightbox';
+  lb.hidden = true;
+  lb.setAttribute('role', 'dialog');
+  lb.setAttribute('aria-modal', 'true');
+  lb.innerHTML =
+    '<button type="button" class="lightbox__close" aria-label="Chiudi">&times;</button>' +
+    '<button type="button" class="lightbox__nav lightbox__prev" aria-label="Foto precedente">&#8249;</button>' +
+    '<figure class="lightbox__fig"><img class="lightbox__img" alt=""></figure>' +
+    '<button type="button" class="lightbox__nav lightbox__next" aria-label="Foto successiva">&#8250;</button>' +
+    '<div class="lightbox__cap"><span class="lightbox__title"></span><span class="lightbox__note"></span><span class="lightbox__count"></span></div>';
+  document.body.appendChild(lb);
+
+  var lbImg = lb.querySelector('.lightbox__img');
+  var lbTitle = lb.querySelector('.lightbox__title');
+  var lbNote = lb.querySelector('.lightbox__note');
+  var lbCount = lb.querySelector('.lightbox__count');
+  var current = 0;
+
+  function visible() { return all.filter(function (x) { return !x.missing; }); }
+
+  function show(i) {
+    current = i;
+    var item = all[i];
+    var vis = visible();
+    lbImg.src = item.src;
+    lbImg.alt = item.title;
+    lbTitle.textContent = item.title;
+    lbNote.textContent = item.note;
+    lbNote.style.display = item.note ? '' : 'none';
+    lbCount.textContent = (vis.indexOf(item) + 1) + ' / ' + vis.length;
+    lb.classList.toggle('lightbox--single', vis.length < 2);
+  }
+
+  function openAt(i) {
+    show(i);
+    lb.hidden = false;
+    document.documentElement.classList.add('lightbox-open');
+    lb.querySelector('.lightbox__close').focus();
+  }
+
+  function close() {
+    lb.hidden = true;
+    document.documentElement.classList.remove('lightbox-open');
+    if (all[current] && all[current].el) { all[current].el.focus(); }
+  }
+
+  function step(d) {
+    var i = current;
+    for (var k = 0; k < all.length; k++) {
+      i = (i + d + all.length) % all.length;
+      if (!all[i].missing) { break; }
+    }
+    show(i);
+  }
+
+  lb.querySelector('.lightbox__close').addEventListener('click', close);
+  lb.querySelector('.lightbox__prev').addEventListener('click', function (e) { e.stopPropagation(); step(-1); });
+  lb.querySelector('.lightbox__next').addEventListener('click', function (e) { e.stopPropagation(); step(1); });
+  lb.addEventListener('click', function (e) {
+    if (e.target === lb || e.target.classList.contains('lightbox__fig')) { close(); }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (lb.hidden) { return; }
+    if (e.key === 'Escape') { close(); }
+    else if (e.key === 'ArrowLeft') { step(-1); }
+    else if (e.key === 'ArrowRight') { step(1); }
+  });
+
+  var startX = null;
+  lb.addEventListener('touchstart', function (e) { startX = e.touches[0].clientX; }, { passive: true });
+  lb.addEventListener('touchend', function (e) {
+    if (startX === null) { return; }
+    var dx = e.changedTouches[0].clientX - startX;
+    if (Math.abs(dx) > 50) { step(dx < 0 ? 1 : -1); }
+    startX = null;
+  });
+})();
+</script>

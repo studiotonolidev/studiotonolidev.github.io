@@ -1,0 +1,36 @@
+<div id="site-intro" class="site-intro" role="img" aria-label="Studio Tonoli" title="Studio Tonoli">
+  <svg class="site-intro__logo" viewBox="0 0 1287 946" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+    <g class="site-intro__build">
+      <path d="M107,844 L107,373 A673,673 0 0 1 1179,373 L1179,844 Z" fill="#ffffff"></path>
+      <rect x="100" y="417" width="1086" height="11" fill="#FAA459"/><rect x="100" y="471" width="1086" height="11" fill="#FAA459"/><rect x="100" y="524" width="1086" height="11" fill="#FAA459"/><rect x="100" y="578" width="1086" height="11" fill="#FAA459"/><rect x="100" y="631" width="1086" height="11" fill="#FAA459"/><rect x="100" y="685" width="1086" height="11" fill="#FAA459"/><rect x="100" y="738" width="1086" height="11" fill="#FAA459"/><rect x="100" y="792" width="1086" height="11" fill="#FAA459"/><rect x="471" y="416" width="11" height="428" fill="#FAA459"/><rect x="806" y="416" width="11" height="428" fill="#FAA459"/>
+      <rect x="531" y="425" width="224" height="72" fill="#ffffff"></rect>
+      <path d="M474,424 A169,169 0 0 1 812,424" fill="none" stroke="#FAA459" stroke-width="10"/><path d="M528,424 A115,115 0 0 1 758,424 Z" fill="#FAA459"/><line x1="535.3" y1="383.7" x2="489.4" y2="366.6" stroke="#FAA459" stroke-width="7"/><line x1="555.6" y1="349.3" x2="518.3" y2="317.5" stroke="#FAA459" stroke-width="7"/><line x1="586.0" y1="324.1" x2="561.7" y2="281.5" stroke="#FAA459" stroke-width="7"/><line x1="623.4" y1="310.7" x2="615.1" y2="262.4" stroke="#FAA459" stroke-width="7"/><line x1="662.8" y1="310.7" x2="671.2" y2="262.4" stroke="#FAA459" stroke-width="7"/><line x1="700.2" y1="324.2" x2="724.5" y2="281.7" stroke="#FAA459" stroke-width="7"/><line x1="730.7" y1="349.6" x2="768.1" y2="317.9" stroke="#FAA459" stroke-width="7"/><line x1="750.7" y1="383.7" x2="796.6" y2="366.6" stroke="#FAA459" stroke-width="7"/><rect x="558" y="447" width="22" height="28" fill="#FAA459"/><rect x="608" y="447" width="22" height="28" fill="#FAA459"/><rect x="657" y="447" width="22" height="28" fill="#FAA459"/><rect x="706" y="447" width="22" height="28" fill="#FAA459"/>
+      <rect x="531" y="497" width="224" height="347" fill="#FAA459"></rect>
+    </g>
+  </svg>
+  <p class="site-intro__hint">tocca per entrare</p>
+</div>
+
+<script>
+(function () {
+  var intro = document.getElementById('site-intro');
+  if (!intro) { return; }
+  try {
+    if (sessionStorage.getItem('studioTonoliIntro')) { intro.parentNode && intro.parentNode.removeChild(intro); return; }
+  } catch (e) {}
+  var html = document.documentElement;
+  html.classList.add('intro-active');
+  var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var done = false;
+  function finish() {
+    if (done) { return; }
+    done = true;
+    intro.classList.add('site-intro--hide');
+    html.classList.remove('intro-active');
+    try { sessionStorage.setItem('studioTonoliIntro', '1'); } catch (e) {}
+    setTimeout(function () { intro.parentNode && intro.parentNode.removeChild(intro); }, 800);
+  }
+  intro.addEventListener('click', finish);
+  setTimeout(finish, reduce ? 500 : 2800);
+})();
+</script>
